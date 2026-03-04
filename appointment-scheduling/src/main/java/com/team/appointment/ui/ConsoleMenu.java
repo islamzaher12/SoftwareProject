@@ -32,7 +32,7 @@ public class ConsoleMenu {
                     viewAvailableSlots();
                     break;
                 case 3:
-                    System.out.println("Book appointment (Sprint 2)");
+                    bookAppointment();
                     break;
                 case 4:
                     System.out.println("Cancel appointment (Sprint 2)");
@@ -99,7 +99,35 @@ public class ConsoleMenu {
             System.out.println("No available slots.");
         }
     }
+    private void bookAppointment() {
 
+        System.out.println("Available slots:");
+
+        int i = 1;
+
+        for (AppointmentSlot slot : slotService.getAvailableSlots()) {
+            System.out.println(i++ + ") " + slot);
+        }
+
+        if (i == 1) {
+            System.out.println("No available slots.");
+            return;
+        }
+
+        int slotNumber = readInt("Choose slot number: ");
+
+        int duration = readInt("Enter duration (minutes): ");
+
+        int participants = readInt("Enter number of participants: ");
+
+        boolean booked = slotService.bookSlot(slotNumber, duration, participants);
+
+        if (booked) {
+            System.out.println("Appointment booked successfully.");
+        } else {
+            System.out.println("Invalid booking (slot, duration, or participants).");
+        }
+    }
     private int readInt(String prompt) {
         while (true) {
             System.out.print(prompt);
