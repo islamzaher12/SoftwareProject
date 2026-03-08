@@ -1,16 +1,23 @@
 package com.team.appointment.ui;
 
 import java.util.Scanner;
+import com.team.appointment.service.BookingService;
 
 import com.team.appointment.model.AppointmentSlot;
 import com.team.appointment.model.User;
 import com.team.appointment.service.AuthService;
 import com.team.appointment.service.SlotService;
+import com.team.appointment.service.ConsoleNotifier;
+import com.team.appointment.service.NotificationService;
 
 public class ConsoleMenu {
+	
     private final Scanner in;
     private final AuthService auth = new AuthService();
     private final SlotService slotService = new SlotService();
+    private final BookingService bookingService = new BookingService(slotService);
+    private final NotificationService notificationService =
+	        new NotificationService(slotService, new ConsoleNotifier());
     private User currentUser = null;
 
     public ConsoleMenu(Scanner in) {
@@ -35,7 +42,7 @@ public class ConsoleMenu {
                     bookAppointment();
                     break;
                 case 4:
-                    System.out.println("Cancel appointment (Sprint 2)");
+                    cancelAppointment();
                     break;
                 case 5:
                     handleLogout();
@@ -100,6 +107,10 @@ public class ConsoleMenu {
         }
     }
     private void bookAppointment() {
+    	if (currentUser == null) {
+    	    System.out.println("Please login first.");
+    	    return;
+    	}
 
         System.out.println("Available slots:");
 
@@ -120,10 +131,11 @@ public class ConsoleMenu {
 
         int participants = readInt("Enter number of participants: ");
 
-        boolean booked = slotService.bookSlot(slotNumber, duration, participants);
+        boolean booked = bookingService.bookAppointment(slotNumber, duration, participants);
 
         if (booked) {
             System.out.println("Appointment booked successfully.");
+            notificationService.sendReminders();
         } else {
             System.out.println("Invalid booking (slot, duration, or participants).");
         }
@@ -137,6 +149,29 @@ public class ConsoleMenu {
             } catch (NumberFormatException e) {
                 System.out.println("Please enter a number.");
             }
+        }
+    }
+    private void cancelAppointment() {
+    	
+    	if (currentUser == null) {
+    	    System.out.println("Please login first.");
+    	    return;
+    	} 
+    	
+        int i = 1;
+
+        for (AppointmentSlot slot : slotService.getAllSlots()) {
+            System.out.println(i++ + ") " + slot);
+        }
+
+        int slotNumber = readInt("Choose slot number to cancel: ");
+
+        boolean canceled = bookingService.cancelBooking(slotNumber);
+
+        if (canceled) {
+            System.out.println("Appointment canceled successfully.");
+        } else {
+            System.out.println("Invalid slot number or slot is not booked.");
         }
     }
 }
