@@ -45,6 +45,9 @@ public class ConsoleMenu {
                     cancelAppointment();
                     break;
                 case 5:
+                    modifyAppointment();
+                    break;
+                case 6:
                     handleLogout();
                     break;
                 case 0:
@@ -53,18 +56,22 @@ public class ConsoleMenu {
                 default:
                     System.out.println("Invalid choice. Try again.");
             }
+
             System.out.println();
         }
+
         System.out.println("Bye!");
     }
-
     private void printMainMenu() {
         System.out.println("=== Appointment Scheduling System ===");
         System.out.println("1) Login");
         System.out.println("2) View available slots");
         System.out.println("3) Book appointment");
         System.out.println("4) Cancel appointment");
-        System.out.println("5) Logout");
+     
+        System.out.println("5) Modify appointment");
+        System.out.println("6) Logout");
+       
         System.out.println("0) Exit");
     }
 
@@ -149,6 +156,44 @@ public class ConsoleMenu {
             } catch (NumberFormatException e) {
                 System.out.println("Please enter a number.");
             }
+        }
+    }
+    private void modifyAppointment() {
+        if (currentUser == null) {
+            System.out.println("Please login first.");
+            return;
+        }
+
+        System.out.println("All slots:");
+        int i = 1;
+        for (AppointmentSlot slot : slotService.getAllSlots()) {
+            System.out.println(i++ + ") " + slot);
+        }
+
+        int oldSlotNumber = readInt("Choose your booked slot to modify: ");
+
+        System.out.println("Available slots:");
+        int j = 1;
+        for (AppointmentSlot slot : slotService.getAvailableSlots()) {
+            System.out.println(j++ + ") " + slot);
+        }
+
+        if (j == 1) {
+            System.out.println("No available slots.");
+            return;
+        }
+
+        int newSlotNumber = readInt("Choose new slot number: ");
+        int duration = readInt("Enter duration (minutes): ");
+        int participants = readInt("Enter number of participants: ");
+
+        boolean modified = bookingService.modifyBooking(oldSlotNumber, newSlotNumber, duration, participants);
+
+        if (modified) {
+            System.out.println("Appointment modified successfully.");
+            notificationService.sendReminders();
+        } else {
+            System.out.println("Modification failed. Check slot numbers, future appointment rule, or booking details.");
         }
     }
     private void cancelAppointment() {
