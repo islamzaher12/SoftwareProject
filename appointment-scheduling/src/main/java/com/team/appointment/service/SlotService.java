@@ -29,4 +29,4 @@ public class SlotService {
         return slots;
     }
 
-   
+}
