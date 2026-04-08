@@ -1,4 +1,5 @@
 package com.team.appointment.ui;
+import com.team.appointment.service.EmailNotifier;
 
 import java.util.Scanner;
 import com.team.appointment.service.BookingService;
@@ -17,7 +18,7 @@ public class ConsoleMenu {
     private final SlotService slotService = new SlotService();
     private final BookingService bookingService = new BookingService(slotService);
     private final NotificationService notificationService =
-	        new NotificationService(slotService, new ConsoleNotifier());
+	        new NotificationService(slotService, new EmailNotifier());
     private User currentUser = null;
 
     public ConsoleMenu(Scanner in) {
