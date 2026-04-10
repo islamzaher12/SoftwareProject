@@ -17,8 +17,7 @@ public class ConsoleMenu {
     private final AuthService auth = new AuthService();
     private final SlotService slotService = new SlotService();
     private final BookingService bookingService = new BookingService(slotService);
-    private final NotificationService notificationService =
-	        new NotificationService(slotService, new EmailNotifier());
+    private final NotificationService notificationService = new NotificationService(slotService, new EmailNotifier());
     private User currentUser = null;
 
     public ConsoleMenu(Scanner in) {

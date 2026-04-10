@@ -5,17 +5,39 @@ import jakarta.mail.internet.*;
 
 import java.util.Properties;
 
+/**
+ * A {@link Notifier} implementation that delivers notification messages
+ * via Gmail SMTP.  Requires the environment variable {@code EMAIL_PASS}
+ * to be set to the Gmail App Password for the sender account.
+ *
+ * <p>If {@code EMAIL_PASS} is not set the method logs a warning to the
+ * console and returns without throwing.
+ *
+ * @author Team
+ * @version 1.0
+ */
 public class EmailNotifier implements Notifier {
 
-    private final String fromEmail = "deeda.ishtayeh@gmail.com";
-    private final String appPassword = System.getenv("EMAIL_PASS");
-    private final String toEmail = "deeda.ishtayeh@gmail.com";
+    /** Gmail address used as both sender and recipient for demo purposes. */
+    private final String fromEmail = "s12240028@stu.najah.edu";
 
+    /** Gmail App Password read from the {@code EMAIL_PASS} environment variable. */
+    private final String appPassword = System.getenv("EMAIL_PASS");
+
+    /** Recipient email address. */
+    private final String toEmail = "s12240028@stu.najah.edu";
+
+    /**
+     * Sends the given message as an email via Gmail SMTP.
+     * Silently skips if {@code EMAIL_PASS} is not configured.
+     *
+     * @param message the notification body text
+     */
     @Override
     public void send(String message) {
 
         if (appPassword == null) {
-            System.out.println("❌ EMAIL_PASS not set!");
+            System.out.println("[EmailNotifier] EMAIL_PASS not set – skipping email send.");
             return;
         }
 
@@ -27,6 +49,7 @@ public class EmailNotifier implements Notifier {
 
         Session session = Session.getInstance(props,
                 new Authenticator() {
+                    @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
                         return new PasswordAuthentication(fromEmail, appPassword);
                     }
@@ -43,12 +66,10 @@ public class EmailNotifier implements Notifier {
             emailMessage.setText(message);
 
             Transport.send(emailMessage);
-
-            System.out.println("✅ Email sent successfully!");
+            System.out.println("[EmailNotifier] Email sent successfully.");
 
         } catch (MessagingException e) {
-            System.out.println(" Failed to send email.");
-            e.printStackTrace();
+            System.out.println("[EmailNotifier] Failed to send email: " + e.getMessage());
         }
     }
 }
