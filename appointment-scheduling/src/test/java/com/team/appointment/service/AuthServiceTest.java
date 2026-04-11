@@ -1,17 +1,11 @@
 package com.team.appointment.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.team.appointment.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.team.appointment.model.User;
 
-/**
- * Unit tests for {@link AuthService}.
- * Validates correct credential handling and admin-flag assignment.
- *
- * @author Team
- * @version 1.0
- */
+import static org.junit.jupiter.api.Assertions.*;
+
 public class AuthServiceTest {
 
     private AuthService authService;
@@ -22,60 +16,142 @@ public class AuthServiceTest {
     }
 
     @Test
-    void login_validAdminCredentials_shouldReturnUser() {
-        User u = authService.login("admin", "1234");
-        assertNotNull(u);
+    void testLoginWithValidAdminCredentials() {
+        User user = authService.login("admin", "1234");
+
+        assertNotNull(user);
+        assertEquals("admin", user.getUsername());
+        assertEquals("1234", user.getPassword());
+        assertTrue(user.isAdmin());
     }
 
     @Test
-    void login_validUserCredentials_shouldReturnUser() {
-        User u = authService.login("user", "1111");
-        assertNotNull(u);
+    void testLoginWithValidRegularUserCredentials() {
+        User user = authService.login("user", "1111");
+
+        assertNotNull(user);
+        assertEquals("user", user.getUsername());
+        assertEquals("1111", user.getPassword());
+        assertFalse(user.isAdmin());
     }
 
     @Test
-    void login_wrongPassword_shouldReturnNull() {
-        assertNull(authService.login("admin", "wrong"));
+    void testLoginWithWrongPassword() {
+        User user = authService.login("admin", "wrong");
+
+        assertNull(user);
     }
 
     @Test
-    void login_unknownUsername_shouldReturnNull() {
-        assertNull(authService.login("nobody", "1234"));
+    void testLoginWithUnknownUsername() {
+        User user = authService.login("unknown", "1234");
+
+        assertNull(user);
     }
 
     @Test
-    void login_emptyCredentials_shouldReturnNull() {
-        assertNull(authService.login("", ""));
+    void testLoginWithNullUsername() {
+        User user = authService.login(null, "1234");
+
+        assertNull(user);
     }
 
     @Test
-    void login_adminUser_isAdminFlagTrue() {
-        User u = authService.login("admin", "1234");
-        assertNotNull(u);
-        assertTrue(u.isAdmin());
+    void testLoginWithNullPassword() {
+        User user = authService.login("admin", null);
+
+        assertNull(user);
     }
 
     @Test
-    void login_regularUser_isAdminFlagFalse() {
-        User u = authService.login("user", "1111");
-        assertNotNull(u);
-        assertFalse(u.isAdmin());
+    void testAddUserSuccessfullyAsRegularUser() {
+        boolean result = authService.addUser("ali", "9999", false);
+
+        assertTrue(result);
+        assertTrue(authService.userExists("ali"));
+
+        User user = authService.login("ali", "9999");
+        assertNotNull(user);
+        assertEquals("ali", user.getUsername());
+        assertFalse(user.isAdmin());
     }
 
     @Test
-    void login_caseSensitiveUsername() {
-        assertNull(authService.login("Admin", "1234"));
+    void testAddUserSuccessfullyAsAdmin() {
+        boolean result = authService.addUser("manager", "abcd", true);
+
+        assertTrue(result);
+        assertTrue(authService.userExists("manager"));
+
+        User user = authService.login("manager", "abcd");
+        assertNotNull(user);
+        assertEquals("manager", user.getUsername());
+        assertTrue(user.isAdmin());
     }
 
     @Test
-    void login_caseSensitivePassword() {
-        assertNull(authService.login("admin", "1234 "));
+    void testAddUserFailsWhenUsernameAlreadyExists() {
+        boolean result = authService.addUser("admin", "newpass", false);
+
+        assertFalse(result);
     }
 
     @Test
-    void login_successReturnsCorrectUsername() {
-        User u = authService.login("admin", "1234");
-        assertNotNull(u);
-        assertEquals("admin", u.getUsername());
+    void testAddUserFailsWhenUsernameIsNull() {
+        boolean result = authService.addUser(null, "1234", false);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void testAddUserFailsWhenUsernameIsBlank() {
+        boolean result = authService.addUser("   ", "1234", false);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void testAddUserFailsWhenPasswordIsNull() {
+        boolean result = authService.addUser("sara", null, false);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void testAddUserFailsWhenPasswordIsBlank() {
+        boolean result = authService.addUser("sara", "   ", false);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void testUserExistsForDefaultUsers() {
+        assertTrue(authService.userExists("admin"));
+        assertTrue(authService.userExists("user"));
+    }
+
+    @Test
+    void testUserExistsForAddedUser() {
+        authService.addUser("mohammad", "5555", false);
+
+        assertTrue(authService.userExists("mohammad"));
+    }
+
+    @Test
+    void testUserExistsForNonExistingUser() {
+        assertFalse(authService.userExists("notfound"));
+    }
+
+    @Test
+    void testDuplicateUserIsNotAddedTwice() {
+        boolean firstAdd = authService.addUser("ahmad", "1111", false);
+        boolean secondAdd = authService.addUser("ahmad", "2222", true);
+
+        assertTrue(firstAdd);
+        assertFalse(secondAdd);
+
+        User user = authService.login("ahmad", "1111");
+        assertNotNull(user);
+        assertFalse(user.isAdmin());
     }
 }

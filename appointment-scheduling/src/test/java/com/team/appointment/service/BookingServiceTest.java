@@ -209,4 +209,23 @@ public class BookingServiceTest {
         bookingService.bookAppointment(1, 30, 1);
         assertFalse(bookingService.modifyBooking(1, 999, 30, 1));
     }
+    // ── Additional: capacity branches in overloads ─────────────────────────────
+
+    @Test
+    void bookAppointment_tooManyParticipants_withType_shouldFail() {
+        assertFalse(bookingService.bookAppointment(1, 30, 4, AppointmentType.GROUP));
+    }
+
+    @Test
+    void modifyBooking_tooManyParticipants_noType_shouldFail() {
+        bookingService.bookAppointment(1, 30, 1);
+        assertFalse(bookingService.modifyBooking(1, 2, 30, 10));
+    }
+
+    @Test
+    void modifyBooking_tooManyParticipants_withType_shouldFail() {
+        bookingService.bookAppointment(1, 30, 1, AppointmentType.INDIVIDUAL);
+        assertFalse(bookingService.modifyBooking(1, 2, 30, 4, AppointmentType.GROUP));
+    }
+
 }

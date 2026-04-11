@@ -95,6 +95,7 @@ public class MainFrame extends JFrame {
     // Notifications / Admin
     private JTextArea  notificationLogArea;
     private JTextField adminDateField;
+    
     private JTextField adminTimeField;
     private JLabel     adminStatusLabel;
     private JSpinner                   bookDurationSpinner;
@@ -551,6 +552,8 @@ public class MainFrame extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
+    /** Validates inputs and registers a new user account via the auth service. */
+  
 
    
     private JPanel buildCancelPanel() {
@@ -638,7 +641,33 @@ public class MainFrame extends JFrame {
      * Builds the "Administrator Panel" for adding new slots.
      *
      * @return the panel
-     */
+     */        JPanel addUserSection = sectionPanel("Add New User");
+     JPanel userForm = buildFormContainer();
+
+     adminNewUsernameField  = styledTextField("");
+     adminNewPasswordField  = new JPasswordField();
+     styleTextField(adminNewPasswordField, "");
+     adminIsAdminCheckBox   = new JCheckBox("Grant admin privileges");
+     adminIsAdminCheckBox.setFont(FONT_BODY);
+     adminIsAdminCheckBox.setOpaque(false);
+     adminUserStatusLabel   = statusLabel();
+
+     JButton addUserBtn = accentButton("  Add User  ");
+     addUserBtn.addActionListener(e -> performAddUser());
+
+     addRow(userForm, 0, "Username :", adminNewUsernameField);
+     addRow(userForm, 1, "Password :", adminNewPasswordField);
+
+     GridBagConstraints gc2 = new GridBagConstraints();
+     gc2.insets = new Insets(4, 8, 4, 8);
+     gc2.gridx = 0; gc2.gridy = 2; gc2.gridwidth = 2;
+     gc2.anchor = GridBagConstraints.WEST;
+     userForm.add(adminIsAdminCheckBox, gc2);
+     addButtonRow(userForm, 3, addUserBtn, adminUserStatusLabel);
+
+     addUserSection.add(userForm, BorderLayout.CENTER);
+     wrapper.add(addUserSection, BorderLayout.SOUTH);
+
     private JPanel buildAdminPanel() {
         JPanel panel = contentPanel("Administrator Panel");
 
@@ -682,7 +711,7 @@ public class MainFrame extends JFrame {
         adminUserStatusLabel  = statusLabel();
 
         JButton addUserBtn = primaryButton("  Add User  ");
-        addUserBtn.addActionListener(e -> performAddUser());
+        addUserBtn.addActionListener(e -> performAddUser1());
 
         addRow(userForm, 0, "Username :", adminNewUsernameField);
         addRow(userForm, 1, "Password :", adminNewPasswordField);
@@ -720,6 +749,7 @@ public class MainFrame extends JFrame {
         return panel;
     }
     /** Validates inputs and registers a new user account. */
+    /** Validates inputs and registers a new user account via the auth service. */
     private void performAddUser() {
         if (currentUser == null || !currentUser.isAdmin()) {
             setStatus(adminUserStatusLabel, "Access denied. Admin privileges required.", false);
@@ -728,24 +758,25 @@ public class MainFrame extends JFrame {
         String username = adminNewUsernameField.getText().trim();
         String password = new String(adminNewPasswordField.getPassword()).trim();
         if (username.isEmpty()) {
-            setStatus(adminUserStatusLabel, "Username cannot be empty.", false); return;
+            setStatus(adminUserStatusLabel, "Username cannot be empty.", false);
+            return;
         }
         if (password.isEmpty()) {
-            setStatus(adminUserStatusLabel, "Password cannot be empty.", false); return;
+            setStatus(adminUserStatusLabel, "Password cannot be empty.", false);
+            return;
         }
         boolean isAdmin = adminIsAdminCheckBox.isSelected();
         boolean ok = authService.addUser(username, password, isAdmin);
         if (ok) {
-            setStatus(adminUserStatusLabel,
-                    "User '" + username + "' added" + (isAdmin ? " [ADMIN]" : "") + ".", true);
+            setStatus(adminUserStatusLabel, "User '" + username + "' added successfully.", true);
             adminNewUsernameField.setText("");
             adminNewPasswordField.setText("");
             adminIsAdminCheckBox.setSelected(false);
         } else {
-            setStatus(adminUserStatusLabel,
-                    "Username '" + username + "' already exists.", false);
+            setStatus(adminUserStatusLabel, "Username '" + username + "' already exists.", false);
         }
     }
+
 
     private void performAddSlot() {
         if (currentUser == null || !currentUser.isAdmin()) {

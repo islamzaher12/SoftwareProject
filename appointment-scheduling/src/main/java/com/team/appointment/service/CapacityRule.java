@@ -25,6 +25,6 @@ public class CapacityRule implements BookingRuleStrategy {
      */
     @Override
     public boolean isValid(AppointmentSlot slot, int participants) {
-        return participants <= MAX_PARTICIPANTS;
+    	return participants >= 1 && participants <= MAX_PARTICIPANTS;
     }
 }
