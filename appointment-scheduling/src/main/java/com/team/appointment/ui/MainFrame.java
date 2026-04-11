@@ -641,33 +641,7 @@ public class MainFrame extends JFrame {
      * Builds the "Administrator Panel" for adding new slots.
      *
      * @return the panel
-     */        JPanel addUserSection = sectionPanel("Add New User");
-     JPanel userForm = buildFormContainer();
-
-     adminNewUsernameField  = styledTextField("");
-     adminNewPasswordField  = new JPasswordField();
-     styleTextField(adminNewPasswordField, "");
-     adminIsAdminCheckBox   = new JCheckBox("Grant admin privileges");
-     adminIsAdminCheckBox.setFont(FONT_BODY);
-     adminIsAdminCheckBox.setOpaque(false);
-     adminUserStatusLabel   = statusLabel();
-
-     JButton addUserBtn = accentButton("  Add User  ");
-     addUserBtn.addActionListener(e -> performAddUser());
-
-     addRow(userForm, 0, "Username :", adminNewUsernameField);
-     addRow(userForm, 1, "Password :", adminNewPasswordField);
-
-     GridBagConstraints gc2 = new GridBagConstraints();
-     gc2.insets = new Insets(4, 8, 4, 8);
-     gc2.gridx = 0; gc2.gridy = 2; gc2.gridwidth = 2;
-     gc2.anchor = GridBagConstraints.WEST;
-     userForm.add(adminIsAdminCheckBox, gc2);
-     addButtonRow(userForm, 3, addUserBtn, adminUserStatusLabel);
-
-     addUserSection.add(userForm, BorderLayout.CENTER);
-     wrapper.add(addUserSection, BorderLayout.SOUTH);
-
+     */
     private JPanel buildAdminPanel() {
         JPanel panel = contentPanel("Administrator Panel");
 
@@ -711,7 +685,7 @@ public class MainFrame extends JFrame {
         adminUserStatusLabel  = statusLabel();
 
         JButton addUserBtn = primaryButton("  Add User  ");
-        addUserBtn.addActionListener(e -> performAddUser1());
+        addUserBtn.addActionListener(e -> performAddUser());
 
         addRow(userForm, 0, "Username :", adminNewUsernameField);
         addRow(userForm, 1, "Password :", adminNewPasswordField);

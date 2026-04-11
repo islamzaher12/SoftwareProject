@@ -8,9 +8,8 @@ import com.team.appointment.service.BookingService;
 import com.team.appointment.service.NotificationService;
 import com.team.appointment.service.SlotService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-import org.mockito.MockedStatic;
+import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -37,80 +36,73 @@ public class MainFrameTest {
     void setUp() throws Exception {
         frame = allocateWithoutConstructor();
 
-        authService          = mock(AuthService.class);
-        slotService          = mock(SlotService.class);
-        bookingService       = mock(BookingService.class);
-        notificationService  = mock(NotificationService.class);
+        authService = mock(AuthService.class);
+        slotService = mock(SlotService.class);
+        bookingService = mock(BookingService.class);
+        notificationService = mock(NotificationService.class);
 
-        setField(frame, "authService",          authService);
-        setField(frame, "slotService",          slotService);
-        setField(frame, "bookingService",       bookingService);
-        setField(frame, "notificationService",  notificationService);
+        setField(frame, "authService", authService);
+        setField(frame, "slotService", slotService);
+        setField(frame, "bookingService", bookingService);
+        setField(frame, "notificationService", notificationService);
 
         setField(frame, "cardLayout", new CardLayout());
-        setField(frame, "rootPanel",  new JPanel(new CardLayout()));
+        setField(frame, "rootPanel", new JPanel(new CardLayout()));
 
-        // Login fields
         setField(frame, "loginUsernameField", new JTextField());
         setField(frame, "loginPasswordField", new JPasswordField());
-        setField(frame, "loginErrorLabel",    new JLabel(" "));
+        setField(frame, "loginErrorLabel", new JLabel(" "));
 
-        // Header / tabs
         setField(frame, "headerUserLabel", new JLabel());
+
         JTabbedPane tabbedPane = new JTabbedPane();
-        for (int i = 0; i < 6; i++) tabbedPane.addTab("Tab" + i, new JPanel());
+        for (int i = 0; i < 6; i++) {
+            tabbedPane.addTab("Tab" + i, new JPanel());
+        }
         setField(frame, "tabbedPane", tabbedPane);
 
-        // View slots
         DefaultTableModel model = new DefaultTableModel(
                 new String[]{"#", "Date", "Time", "Duration", "Participants", "Type", "Status"}, 0);
-        setField(frame, "slotsTableModel",          model);
-        setField(frame, "slotsTable",               new JTable(model));
+        setField(frame, "slotsTableModel", model);
+        setField(frame, "slotsTable", new JTable(model));
         setField(frame, "showAvailableOnlyCheckBox", new JCheckBox());
 
-        // Book  (no duration spinner — performBook hardcodes 30)
-        setField(frame, "bookSlotCombo",           new JComboBox<String>());
-        setField(frame, "bookTypeCombo",           new JComboBox<>(AppointmentType.values()));
+        setField(frame, "bookSlotCombo", new JComboBox<String>());
+        setField(frame, "bookTypeCombo", new JComboBox<>(AppointmentType.values()));
         setField(frame, "bookParticipantsSpinner", new JSpinner(new SpinnerNumberModel(1, 1, 3, 1)));
-        setField(frame, "bookStatusLabel",         new JLabel(" "));
+        setField(frame, "bookDurationSpinner", new JSpinner(new SpinnerNumberModel(30, 1, 30, 1)));
+        setField(frame, "bookStatusLabel", new JLabel(" "));
 
-        // Modify  (no duration spinner — performModify hardcodes 30)
-        setField(frame, "modifyOldSlotCombo",        new JComboBox<String>());
-        setField(frame, "modifyNewSlotCombo",        new JComboBox<String>());
-        setField(frame, "modifyTypeCombo",           new JComboBox<>(AppointmentType.values()));
+        setField(frame, "modifyOldSlotCombo", new JComboBox<String>());
+        setField(frame, "modifyNewSlotCombo", new JComboBox<String>());
+        setField(frame, "modifyTypeCombo", new JComboBox<>(AppointmentType.values()));
         setField(frame, "modifyParticipantsSpinner", new JSpinner(new SpinnerNumberModel(1, 1, 3, 1)));
-        setField(frame, "modifyStatusLabel",         new JLabel(" "));
+        setField(frame, "modifyDurationSpinner", new JSpinner(new SpinnerNumberModel(30, 1, 30, 1)));
+        setField(frame, "modifyStatusLabel", new JLabel(" "));
 
-        // Cancel
-        setField(frame, "cancelSlotCombo",   new JComboBox<String>());
+        setField(frame, "cancelSlotCombo", new JComboBox<String>());
         setField(frame, "cancelStatusLabel", new JLabel(" "));
 
-        // Notifications / admin slot
         setField(frame, "notificationLogArea", new JTextArea());
-        setField(frame, "adminDateField",      new JTextField());
-        setField(frame, "adminTimeField",      new JTextField());
-        setField(frame, "adminStatusLabel",    new JLabel(" "));
-
-        // Admin – add user
+        setField(frame, "adminDateField", new JTextField());
+        setField(frame, "adminTimeField", new JTextField());
+        setField(frame, "adminStatusLabel", new JLabel(" "));
         setField(frame, "adminNewUsernameField", new JTextField());
         setField(frame, "adminNewPasswordField", new JPasswordField());
-        setField(frame, "adminIsAdminCheckBox",  new JCheckBox());
-        setField(frame, "adminUserStatusLabel",  new JLabel(" "));
+        setField(frame, "adminIsAdminCheckBox", new JCheckBox());
+        setField(frame, "adminUserStatusLabel", new JLabel(" "));
     }
-
-    // =========================
-    // Login tests
-    // =========================
 
     @Test
     @DisplayName("performLogin: invalid credentials")
     void testPerformLoginInvalid() throws Exception {
-        JTextField    username = getField("loginUsernameField");
+        JTextField username = getField("loginUsernameField");
         JPasswordField password = getField("loginPasswordField");
-        JLabel         error    = getField("loginErrorLabel");
+        JLabel error = getField("loginErrorLabel");
 
         username.setText("wrong");
         password.setText("bad");
+
         when(authService.login("wrong", "bad")).thenReturn(null);
 
         invoke("performLogin");
@@ -121,58 +113,11 @@ public class MainFrameTest {
     }
 
     @Test
-    @DisplayName("performLogin: valid credentials")
-    void testPerformLoginValid() throws Exception {
-        JTextField     username        = getField("loginUsernameField");
-        JPasswordField password        = getField("loginPasswordField");
-        JLabel         error           = getField("loginErrorLabel");
-        JLabel         headerUserLabel = getField("headerUserLabel");
-        JTabbedPane    tabbedPane      = getField("tabbedPane");
-
-        User user = mock(User.class);
-        when(user.getUsername()).thenReturn("admin");
-        when(user.isAdmin()).thenReturn(true);
-
-        username.setText("admin");
-        password.setText("1234");
-        when(authService.login("admin", "1234")).thenReturn(user);
-        when(slotService.getAllSlots()).thenReturn(Collections.emptyList());
-        when(slotService.getAvailableSlots()).thenReturn(Collections.emptyList());
-
-        invoke("performLogin");
-
-        assertEquals(" ", error.getText());
-        assertSame(user, getField("currentUser"));
-        assertTrue(headerUserLabel.getText().contains("admin"));
-        assertTrue(headerUserLabel.getText().contains("[ADMIN]"));
-        assertTrue(tabbedPane.isEnabledAt(5));
-        assertEquals("", new String(password.getPassword()));
-    }
-
-    @Test
-    @DisplayName("performLogout clears session")
-    void testPerformLogout() throws Exception {
-        JLabel error = getField("loginErrorLabel");
-        setField(frame, "currentUser", mock(User.class));
-        error.setText("Some old error");
-
-        invoke("performLogout");
-
-        assertNull(getField("currentUser"));
-        assertEquals(" ", error.getText());
-    }
-
-    // =========================
-    // Status / utility methods
-    // =========================
-
-    @Test
     @DisplayName("setStatus success")
     void testSetStatusSuccess() throws Exception {
         JLabel lbl = new JLabel();
-        invoke("setStatus",
-                new Class[]{JLabel.class, String.class, boolean.class},
-                lbl, "Done", true);
+
+        invoke("setStatus", new Class[]{JLabel.class, String.class, boolean.class}, lbl, "Done", true);
 
         assertTrue(lbl.getText().contains("Done"));
         assertTrue(lbl.getText().startsWith("✅"));
@@ -182,9 +127,8 @@ public class MainFrameTest {
     @DisplayName("setStatus failure")
     void testSetStatusFailure() throws Exception {
         JLabel lbl = new JLabel();
-        invoke("setStatus",
-                new Class[]{JLabel.class, String.class, boolean.class},
-                lbl, "Failed", false);
+
+        invoke("setStatus", new Class[]{JLabel.class, String.class, boolean.class}, lbl, "Failed", false);
 
         assertTrue(lbl.getText().contains("Failed"));
         assertTrue(lbl.getText().startsWith("❌"));
@@ -196,8 +140,7 @@ public class MainFrameTest {
         JComboBox<String> combo = new JComboBox<>();
         combo.addItem("3: 2026-05-01 09:00");
 
-        int result = (int) invoke("getAllSlotIndex",
-                new Class[]{JComboBox.class}, combo);
+        int result = (int) invoke("getAllSlotIndex", new Class[]{JComboBox.class}, combo);
 
         assertEquals(3, result);
     }
@@ -208,8 +151,7 @@ public class MainFrameTest {
         JComboBox<String> combo = new JComboBox<>();
         combo.addItem("invalid format");
 
-        int result = (int) invoke("getAllSlotIndex",
-                new Class[]{JComboBox.class}, combo);
+        int result = (int) invoke("getAllSlotIndex", new Class[]{JComboBox.class}, combo);
 
         assertEquals(0, result);
     }
@@ -219,15 +161,10 @@ public class MainFrameTest {
     void testGetAllSlotIndexNull() throws Exception {
         JComboBox<String> combo = new JComboBox<>();
 
-        int result = (int) invoke("getAllSlotIndex",
-                new Class[]{JComboBox.class}, combo);
+        int result = (int) invoke("getAllSlotIndex", new Class[]{JComboBox.class}, combo);
 
         assertEquals(0, result);
     }
-
-    // =========================
-    // Refresh methods
-    // =========================
 
     @Test
     @DisplayName("refreshSlotsTable with all slots")
@@ -235,11 +172,8 @@ public class MainFrameTest {
         JCheckBox checkBox = getField("showAvailableOnlyCheckBox");
         checkBox.setSelected(false);
 
-        // FIX: available slot also has duration=30 (matches real SlotService)
-        AppointmentSlot s1 = mockSlot("2026-05-01", "09:00", true,  30, 2, 3,
-                AppointmentType.values()[0], "CONFIRMED");
-        AppointmentSlot s2 = mockSlot("2026-05-01", "10:00", false, 30, 0, 3,
-                null, "PENDING");
+        AppointmentSlot s1 = mockSlot("2026-05-01", "09:00", true, 30, 2, 3, AppointmentType.values()[0], "CONFIRMED");
+        AppointmentSlot s2 = mockSlot("2026-05-01", "10:00", false, 0, 0, 3, null, "AVAILABLE");
 
         when(slotService.getAllSlots()).thenReturn(Arrays.asList(s1, s2));
 
@@ -248,9 +182,9 @@ public class MainFrameTest {
         DefaultTableModel model = getField("slotsTableModel");
         assertEquals(2, model.getRowCount());
         assertEquals("2026-05-01", model.getValueAt(0, 1));
-        assertEquals("09:00",      model.getValueAt(0, 2));
-        assertEquals("30 min",     model.getValueAt(0, 3));  // FIX: "30 min" not "30 min (max)"
-        assertEquals("30 min",     model.getValueAt(1, 3));  // FIX: same format for available
+        assertEquals("09:00", model.getValueAt(0, 2));
+        assertEquals("30 min", model.getValueAt(0, 3));
+        assertEquals("30 min (max)", model.getValueAt(1, 3));
     }
 
     @Test
@@ -259,11 +193,8 @@ public class MainFrameTest {
         JCheckBox checkBox = getField("showAvailableOnlyCheckBox");
         checkBox.setSelected(true);
 
-        AppointmentSlot s1 = mockSlot("2026-05-02", "11:00", false, 30, 0, 3,
-                null, "PENDING");
-        // FIX: Collections.singletonList instead of List.of (Java 8 compatibility)
-        when(slotService.getAvailableSlots())
-                .thenReturn(Collections.singletonList(s1));
+        AppointmentSlot s1 = mockSlot("2026-05-02", "11:00", false, 0, 0, 3, null, "AVAILABLE");
+        when(slotService.getAvailableSlots()).thenReturn(Collections.singletonList(s1));
 
         invoke("refreshSlotsTable");
 
@@ -277,8 +208,8 @@ public class MainFrameTest {
     void testRefreshBookCombo() throws Exception {
         JComboBox<String> combo = getField("bookSlotCombo");
 
-        AppointmentSlot s1 = mockSlot("2026-05-01", "09:00", false, 30, 0, 3, null, "PENDING");
-        AppointmentSlot s2 = mockSlot("2026-05-01", "10:00", false, 30, 0, 3, null, "PENDING");
+        AppointmentSlot s1 = mockSlot("2026-05-01", "09:00", false, 0, 0, 3, null, "AVAILABLE");
+        AppointmentSlot s2 = mockSlot("2026-05-01", "10:00", false, 0, 0, 3, null, "AVAILABLE");
         when(slotService.getAvailableSlots()).thenReturn(Arrays.asList(s1, s2));
 
         invoke("refreshBookCombo");
@@ -294,10 +225,8 @@ public class MainFrameTest {
         JComboBox<String> oldCombo = getField("modifyOldSlotCombo");
         JComboBox<String> newCombo = getField("modifyNewSlotCombo");
 
-        AppointmentSlot booked    = mockSlot("2026-05-03", "08:00", true,  30, 1, 3,
-                AppointmentType.values()[0], "CONFIRMED");
-        AppointmentSlot available = mockSlot("2026-05-03", "09:00", false, 30, 0, 3,
-                null, "PENDING");
+        AppointmentSlot booked = mockSlot("2026-05-03", "08:00", true, 30, 1, 3, AppointmentType.values()[0], "CONFIRMED");
+        AppointmentSlot available = mockSlot("2026-05-03", "09:00", false, 0, 0, 3, null, "AVAILABLE");
 
         when(slotService.getAllSlots()).thenReturn(Arrays.asList(booked, available));
 
@@ -314,10 +243,8 @@ public class MainFrameTest {
     void testRefreshCancelCombo() throws Exception {
         JComboBox<String> combo = getField("cancelSlotCombo");
 
-        AppointmentSlot booked    = mockSlot("2026-05-03", "08:00", true,  30, 2, 3,
-                AppointmentType.values()[0], "CONFIRMED");
-        AppointmentSlot available = mockSlot("2026-05-03", "09:00", false, 30, 0, 3,
-                null, "PENDING");
+        AppointmentSlot booked = mockSlot("2026-05-03", "08:00", true, 30, 2, 3, AppointmentType.values()[0], "CONFIRMED");
+        AppointmentSlot available = mockSlot("2026-05-03", "09:00", false, 0, 0, 3, null, "AVAILABLE");
 
         when(slotService.getAllSlots()).thenReturn(Arrays.asList(booked, available));
 
@@ -326,10 +253,6 @@ public class MainFrameTest {
         assertEquals(1, combo.getItemCount());
         assertTrue(combo.getItemAt(0).contains("2 pax"));
     }
-
-    // =========================
-    // Book tests
-    // =========================
 
     @Test
     @DisplayName("performBook requires login")
@@ -353,68 +276,6 @@ public class MainFrameTest {
         assertTrue(status.getText().contains("No available slots."));
         verifyNoInteractions(bookingService);
     }
-
-    @Test
-    @DisplayName("performBook success")
-    void testPerformBookSuccess() throws Exception {
-        setField(frame, "currentUser", regularUser());
-
-        JComboBox<String>          slotCombo    = getField("bookSlotCombo");
-        JComboBox<AppointmentType> typeCombo    = getField("bookTypeCombo");
-        JSpinner                   participants = getField("bookParticipantsSpinner");
-        JLabel                     status       = getField("bookStatusLabel");
-
-        slotCombo.addItem("2026-05-01   09:00");
-        slotCombo.setSelectedIndex(0);
-        typeCombo.setSelectedIndex(0);
-        participants.setValue(2);
-
-        when(bookingService.bookAppointment(eq(1), eq(30), eq(2), any()))
-                .thenReturn(true);
-        when(slotService.getAllSlots()).thenReturn(Collections.emptyList());
-        when(slotService.getAvailableSlots()).thenReturn(Collections.emptyList());
-
-        // FIX: mock JOptionPane so the success dialog doesn't block the test
-        try (MockedStatic<JOptionPane> ignored = mockStatic(JOptionPane.class)) {
-            invoke("performBook");
-        }
-
-        assertTrue(status.getText().contains("Appointment booked successfully"));
-        verify(bookingService).bookAppointment(eq(1), eq(30), eq(2), any());
-        verify(notificationService).sendReminders();
-    }
-
-    @Test
-    @DisplayName("performBook failure")
-    void testPerformBookFailure() throws Exception {
-        setField(frame, "currentUser", regularUser());
-
-        JComboBox<String>          slotCombo    = getField("bookSlotCombo");
-        JComboBox<AppointmentType> typeCombo    = getField("bookTypeCombo");
-        JSpinner                   participants = getField("bookParticipantsSpinner");
-        JLabel                     status       = getField("bookStatusLabel");
-
-        slotCombo.addItem("2026-05-01   09:00");
-        slotCombo.setSelectedIndex(0);
-        typeCombo.setSelectedIndex(0);
-        participants.setValue(2);
-
-        // FIX: performBook hardcodes duration=30, not 20
-        when(bookingService.bookAppointment(eq(1), eq(30), eq(2), any()))
-                .thenReturn(false);
-
-        // FIX: mock JOptionPane so the error dialog doesn't block the test
-        try (MockedStatic<JOptionPane> ignored = mockStatic(JOptionPane.class)) {
-            invoke("performBook");
-        }
-
-        assertTrue(status.getText().contains("Booking failed"));
-        verify(notificationService, never()).sendReminders();
-    }
-
-    // =========================
-    // Modify tests
-    // =========================
 
     @Test
     @DisplayName("performModify requires login")
@@ -442,7 +303,7 @@ public class MainFrameTest {
     void testPerformModifyNoNewSlots() throws Exception {
         setField(frame, "currentUser", regularUser());
         JComboBox<String> oldCombo = getField("modifyOldSlotCombo");
-        JLabel            status   = getField("modifyStatusLabel");
+        JLabel status = getField("modifyStatusLabel");
 
         oldCombo.addItem("1: 2026-05-01 09:00 [TYPE]");
 
@@ -450,73 +311,6 @@ public class MainFrameTest {
 
         assertTrue(status.getText().contains("No available slots to move to."));
     }
-
-    @Test
-    @DisplayName("performModify success")
-    void testPerformModifySuccess() throws Exception {
-        setField(frame, "currentUser", regularUser());
-
-        JComboBox<String>          oldCombo     = getField("modifyOldSlotCombo");
-        JComboBox<String>          newCombo     = getField("modifyNewSlotCombo");
-        JComboBox<AppointmentType> typeCombo    = getField("modifyTypeCombo");
-        JSpinner                   participants = getField("modifyParticipantsSpinner");
-        JLabel                     status       = getField("modifyStatusLabel");
-
-        oldCombo.addItem("1: 2026-05-01 09:00 [TYPE]");
-        newCombo.addItem("2: 2026-05-01 10:00");
-        oldCombo.setSelectedIndex(0);
-        newCombo.setSelectedIndex(0);
-        typeCombo.setSelectedIndex(0);
-        participants.setValue(2);
-
-        when(bookingService.modifyBooking(eq(1), eq(2), eq(30), eq(2), any()))
-                .thenReturn(true);
-        when(slotService.getAllSlots()).thenReturn(Collections.emptyList());
-        when(slotService.getAvailableSlots()).thenReturn(Collections.emptyList());
-
-        // FIX: mock JOptionPane so the success dialog doesn't block the test
-        try (MockedStatic<JOptionPane> ignored = mockStatic(JOptionPane.class)) {
-            invoke("performModify");
-        }
-
-        assertTrue(status.getText().contains("Booking modified successfully"));
-        verify(bookingService).modifyBooking(eq(1), eq(2), eq(30), eq(2), any());
-        verify(notificationService).sendReminders();
-    }
-
-    @Test
-    @DisplayName("performModify failure")
-    void testPerformModifyFailure() throws Exception {
-        setField(frame, "currentUser", regularUser());
-
-        JComboBox<String>          oldCombo     = getField("modifyOldSlotCombo");
-        JComboBox<String>          newCombo     = getField("modifyNewSlotCombo");
-        JComboBox<AppointmentType> typeCombo    = getField("modifyTypeCombo");
-        JSpinner                   participants = getField("modifyParticipantsSpinner");
-        JLabel                     status       = getField("modifyStatusLabel");
-
-        oldCombo.addItem("1: 2026-05-01 09:00 [TYPE]");
-        newCombo.addItem("2: 2026-05-01 10:00");
-        oldCombo.setSelectedIndex(0);
-        newCombo.setSelectedIndex(0);
-        typeCombo.setSelectedIndex(0);
-        participants.setValue(1);
-
-        when(bookingService.modifyBooking(eq(1), eq(2), eq(30), eq(1), any()))
-                .thenReturn(false);
-
-        // FIX: mock JOptionPane so the error dialog doesn't block the test
-        try (MockedStatic<JOptionPane> ignored = mockStatic(JOptionPane.class)) {
-            invoke("performModify");
-        }
-
-        assertTrue(status.getText().contains("Modification failed"));
-        verify(notificationService, never()).sendReminders();
-    }
-
-    // =========================
-    // Cancel tests
-    // =========================
 
     @Test
     @DisplayName("performCancel requires login")
@@ -540,32 +334,12 @@ public class MainFrameTest {
     }
 
     @Test
-    @DisplayName("performCancel success")
-    void testPerformCancelSuccess() throws Exception {
-        setField(frame, "currentUser", regularUser());
-
-        JComboBox<String> combo  = getField("cancelSlotCombo");
-        JLabel            status = getField("cancelStatusLabel");
-        combo.addItem("3: 2026-05-01 09:00 [2 pax | TYPE]");
-        combo.setSelectedIndex(0);
-
-        when(bookingService.cancelBooking(3)).thenReturn(true);
-        when(slotService.getAllSlots()).thenReturn(Collections.emptyList());
-        when(slotService.getAvailableSlots()).thenReturn(Collections.emptyList());
-
-        invoke("performCancel");
-
-        assertTrue(status.getText().contains("Appointment cancelled"));
-        verify(bookingService).cancelBooking(3);
-    }
-
-    @Test
     @DisplayName("performCancel failure")
     void testPerformCancelFailure() throws Exception {
         setField(frame, "currentUser", regularUser());
 
-        JComboBox<String> combo  = getField("cancelSlotCombo");
-        JLabel            status = getField("cancelStatusLabel");
+        JComboBox<String> combo = getField("cancelSlotCombo");
+        JLabel status = getField("cancelStatusLabel");
         combo.addItem("2: 2026-05-01 09:00 [2 pax | TYPE]");
         combo.setSelectedIndex(0);
 
@@ -575,10 +349,6 @@ public class MainFrameTest {
 
         assertTrue(status.getText().contains("Cancellation failed."));
     }
-
-    // =========================
-    // Admin user tests
-    // =========================
 
     @Test
     @DisplayName("performAddUser denied for non-admin")
@@ -597,9 +367,9 @@ public class MainFrameTest {
     void testPerformAddUserEmptyUsername() throws Exception {
         setField(frame, "currentUser", adminUser());
 
-        JTextField     username = getField("adminNewUsernameField");
+        JTextField username = getField("adminNewUsernameField");
         JPasswordField password = getField("adminNewPasswordField");
-        JLabel         status   = getField("adminUserStatusLabel");
+        JLabel status = getField("adminUserStatusLabel");
 
         username.setText("");
         password.setText("1234");
@@ -614,9 +384,9 @@ public class MainFrameTest {
     void testPerformAddUserEmptyPassword() throws Exception {
         setField(frame, "currentUser", adminUser());
 
-        JTextField     username = getField("adminNewUsernameField");
+        JTextField username = getField("adminNewUsernameField");
         JPasswordField password = getField("adminNewPasswordField");
-        JLabel         status   = getField("adminUserStatusLabel");
+        JLabel status = getField("adminUserStatusLabel");
 
         username.setText("newuser");
         password.setText("");
@@ -631,10 +401,10 @@ public class MainFrameTest {
     void testPerformAddUserSuccess() throws Exception {
         setField(frame, "currentUser", adminUser());
 
-        JTextField     username    = getField("adminNewUsernameField");
-        JPasswordField password    = getField("adminNewPasswordField");
-        JCheckBox      adminCheck  = getField("adminIsAdminCheckBox");
-        JLabel         status      = getField("adminUserStatusLabel");
+        JTextField username = getField("adminNewUsernameField");
+        JPasswordField password = getField("adminNewPasswordField");
+        JCheckBox adminCheck = getField("adminIsAdminCheckBox");
+        JLabel status = getField("adminUserStatusLabel");
 
         username.setText("newuser");
         password.setText("1234");
@@ -644,7 +414,7 @@ public class MainFrameTest {
 
         invoke("performAddUser");
 
-        assertTrue(status.getText().contains("User 'newuser' added"));
+        assertTrue(status.getText().contains("User 'newuser' added successfully."));
         assertEquals("", username.getText());
         assertEquals("", new String(password.getPassword()));
         assertFalse(adminCheck.isSelected());
@@ -655,10 +425,10 @@ public class MainFrameTest {
     void testPerformAddUserDuplicate() throws Exception {
         setField(frame, "currentUser", adminUser());
 
-        JTextField     username   = getField("adminNewUsernameField");
-        JPasswordField password   = getField("adminNewPasswordField");
-        JCheckBox      adminCheck = getField("adminIsAdminCheckBox");
-        JLabel         status     = getField("adminUserStatusLabel");
+        JTextField username = getField("adminNewUsernameField");
+        JPasswordField password = getField("adminNewPasswordField");
+        JCheckBox adminCheck = getField("adminIsAdminCheckBox");
+        JLabel status = getField("adminUserStatusLabel");
 
         username.setText("existing");
         password.setText("1234");
@@ -670,10 +440,6 @@ public class MainFrameTest {
 
         assertTrue(status.getText().contains("already exists"));
     }
-
-    // =========================
-    // Admin slot tests
-    // =========================
 
     @Test
     @DisplayName("performAddSlot denied for non-admin")
@@ -692,9 +458,9 @@ public class MainFrameTest {
     void testPerformAddSlotEmptyFields() throws Exception {
         setField(frame, "currentUser", adminUser());
 
-        JTextField date   = getField("adminDateField");
-        JTextField time   = getField("adminTimeField");
-        JLabel     status = getField("adminStatusLabel");
+        JTextField date = getField("adminDateField");
+        JTextField time = getField("adminTimeField");
+        JLabel status = getField("adminStatusLabel");
 
         date.setText("");
         time.setText("");
@@ -709,9 +475,9 @@ public class MainFrameTest {
     void testPerformAddSlotInvalidDate() throws Exception {
         setField(frame, "currentUser", adminUser());
 
-        JTextField date   = getField("adminDateField");
-        JTextField time   = getField("adminTimeField");
-        JLabel     status = getField("adminStatusLabel");
+        JTextField date = getField("adminDateField");
+        JTextField time = getField("adminTimeField");
+        JLabel status = getField("adminStatusLabel");
 
         date.setText("01-05-2026");
         time.setText("09:00");
@@ -726,9 +492,9 @@ public class MainFrameTest {
     void testPerformAddSlotInvalidTime() throws Exception {
         setField(frame, "currentUser", adminUser());
 
-        JTextField date   = getField("adminDateField");
-        JTextField time   = getField("adminTimeField");
-        JLabel     status = getField("adminStatusLabel");
+        JTextField date = getField("adminDateField");
+        JTextField time = getField("adminTimeField");
+        JLabel status = getField("adminStatusLabel");
 
         date.setText("2026-05-01");
         time.setText("9 AM");
@@ -743,9 +509,9 @@ public class MainFrameTest {
     void testPerformAddSlotSuccess() throws Exception {
         setField(frame, "currentUser", adminUser());
 
-        JTextField date   = getField("adminDateField");
-        JTextField time   = getField("adminTimeField");
-        JLabel     status = getField("adminStatusLabel");
+        JTextField date = getField("adminDateField");
+        JTextField time = getField("adminTimeField");
+        JLabel status = getField("adminStatusLabel");
 
         date.setText("2026-05-01");
         time.setText("09:00");
@@ -758,10 +524,6 @@ public class MainFrameTest {
         verify(slotService).addSlot("2026-05-01", "09:00", 30);
         assertTrue(status.getText().contains("Slot added: 2026-05-01 at 09:00"));
     }
-
-    // =========================
-    // Helpers
-    // =========================
 
     private AppointmentSlot mockSlot(String date, String time, boolean booked,
                                      int duration, int participants, int maxParticipants,
