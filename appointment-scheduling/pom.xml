@@ -1,163 +1,69 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+name: SonarCloud
 
-    <modelVersion>4.0.0</modelVersion>
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 
-    <groupId>com.team</groupId>
-    <artifactId>appointment-scheduling</artifactId>
-    <version>1.0-SNAPSHOT</version>
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: ubuntu-latest
 
-    <properties>
-        <!-- Java -->
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-        <!-- Dependencies versions -->
-        <junit.version>5.10.2</junit.version>
-        <mockito.version>5.12.0</mockito.version>
-        <jacoco.version>0.8.12</jacoco.version>
+      - name: Show project structure
+        run: |
+          pwd
+          ls -la
+          echo "Searching for pom.xml..."
+          find . -name pom.xml
 
-        <!-- SonarCloud -->
-        <sonar.organization>appointment-2026</sonar.organization>
-        <sonar.projectKey>appointment-2026_SoftwareProject</sonar.projectKey>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: zulu
 
-        <!-- JaCoCo XML report path for SonarCloud coverage -->
-        <sonar.coverage.jacoco.xmlReportPaths>
-            target/site/jacoco/jacoco.xml
-        </sonar.coverage.jacoco.xmlReportPaths>
-    </properties>
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
-    <dependencies>
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
-        <!-- Jakarta Mail: email notifications -->
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
-        </dependency>
+      - name: Build, test, coverage, and SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          POM_PATH=$(find . -name pom.xml | head -n 1)
 
-        <!-- JUnit 5: unit testing framework -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
+          if [ -z "$POM_PATH" ]; then
+            echo "ERROR: No pom.xml file found in the repository."
+            exit 1
+          fi
 
-        <!-- Mockito Core: mocking framework -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
+          PROJECT_DIR=$(dirname "$POM_PATH")
 
-        <!-- Mockito JUnit 5 Extension -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
+          echo "Found pom.xml at: $POM_PATH"
+          echo "Running Maven inside: $PROJECT_DIR"
 
-    </dependencies>
+          cd "$PROJECT_DIR"
 
-    <build>
-        <plugins>
-
-            <!-- Maven Surefire: runs JUnit 5 tests -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
-                <configuration>
-                    <useModulePath>false</useModulePath>
-                </configuration>
-            </plugin>
-
-            <!-- JaCoCo: generates code coverage report -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-
-                <configuration>
-                    <!-- Exclude UI, entry-point, and infrastructure adapters
-                         that require a live display/SMTP server and cannot
-                         be exercised through pure unit tests. -->
-                    <excludes>
-                        <exclude>com/team/appointment/ui/**</exclude>
-                        <exclude>com/team/appointment/App.class</exclude>
-                        <exclude>com/team/appointment/service/EmailNotifier*.class</exclude>
-                        <exclude>com/team/appointment/service/GUINotifier.class</exclude>
-                        <exclude>com/team/appointment/service/ConsoleNotifier.class</exclude>
-                    </excludes>
-                </configuration>
-
-                <executions>
-                    <!-- Attach JaCoCo Java agent before tests run -->
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-
-                    <!-- Generate JaCoCo XML/HTML reports after tests -->
-                    <execution>
-                        <id>report</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-
-                    <!-- Enforce minimum coverage -->
-                    <execution>
-                        <id>check</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <rule>
-                                    <element>BUNDLE</element>
-                                    <limits>
-                                        <limit>
-                                            <counter>INSTRUCTION</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>0.80</minimum>
-                                        </limit>
-                                    </limits>
-                                </rule>
-                            </rules>
-                        </configuration>
-                    </execution>
-
-                </executions>
-            </plugin>
-
-            <!-- Maven JAR: sets main class for executable JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.team.appointment.App</mainClass>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
-        </plugins>
-    </build>
-
-</project>
+          mvn -B clean verify sonar:sonar \
+            -Dsonar.projectKey=appointment-2026_SoftwareProject \
+            -Dsonar.organization=appointment-2026 \
+            -Dsonar.host.url=https://sonarcloud.io
