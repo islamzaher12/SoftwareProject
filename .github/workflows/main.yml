@@ -39,6 +39,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build, test, coverage, and SonarCloud analysis
+        working-directory: appointment-scheduling
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: >
