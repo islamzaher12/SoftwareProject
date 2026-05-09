@@ -33,8 +33,7 @@
   **/ui/MainFrame.java,
   **/ui/ConsoleMenu.java,
   **/App.java,
-  **/service/GUINotifier.java,
-  **/service/EmailNotifier.java
+
 </sonar.coverage.exclusions>
 
     </properties>
